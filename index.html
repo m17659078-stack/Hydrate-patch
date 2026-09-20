@@ -1,23 +1,373 @@
 <!doctype html>
 <html lang="en" class="dark">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0A0D14"><title>HYDR8 | Hydration for training</title>
-<script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script>
-<script>tailwind.config={darkMode:'class',theme:{extend:{colors:{ink:'#0A0D14',panel:'#131A26',line:'#263449',blue:'#3B82F6',green:'#10B981'}}}}</script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0A0D14;color:#E2E8F0;font-family:Inter,system-ui,sans-serif;overflow-x:hidden}.card{background:#131A26;border:1px solid #263449;border-radius:18px}.muted{color:#94A3B8}.btn{min-height:44px;border-radius:12px;padding:.7rem 1rem;font-weight:700;transition:transform .15s,background .15s,opacity .15s}.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(0)}.btn:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid #60A5FA;outline-offset:2px}.input{width:100%;min-height:44px;background:#0A0D14;border:1px solid #334155;border-radius:12px;padding:.7rem;color:#fff}.tab{display:none}.tab.active{display:block}.navbtn{min-height:54px;border-radius:12px;color:#94A3B8;font-size:.75rem}.navbtn[aria-current=true]{background:#1D4ED8;color:#fff}.modal{background:rgba(2,6,23,.86);backdrop-filter:blur(8px)}.chart{height:240px;position:relative}.pill{border:1px solid #334155;border-radius:999px;padding:.3rem .65rem;font-size:.7rem}.status{display:inline-flex;align-items:center;gap:.45rem}.dot{width:9px;height:9px;border-radius:99px;background:#64748B}.dot.ok{background:#10B981}.dot.warn{background:#F59E0B}.dot.bad{background:#EF4444}@media(max-width:640px){.desktop{display:none!important}.shell{padding:.75rem!important}.grid-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.chart{height:210px}}
-</style></head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0A0D14">
+  <title>HYDR8 | Hydration for training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0A0D14',
+            panel: '#131A26',
+            line: '#263449',
+            blue: '#3B82F6',
+            green: '#10B981'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #0A0D14; color: #E2E8F0; font-family: Inter, system-ui, sans-serif; }
+    body { overflow-x: hidden; }
+    .card { background: #131A26; border: 1px solid rgba(148,163,184,.18); border-radius: 18px; box-shadow: 0 8px 24px rgba(15,23,42,.25); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 700; transition: .15s ease; }
+    .btn-primary { background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: white; }
+    .btn-secondary { background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.25); color: #bfdbfe; }
+    .btn-ghost { background: transparent; border: 1px solid rgba(148,163,184,.2); color: #e2e8f0; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 9999px; }
+    .dot.ok { background: #34d399; box-shadow: 0 0 10px rgba(52,211,153,.8); }
+    .dot.warn { background: #fbbf24; box-shadow: 0 0 10px rgba(251,191,36,.8); }
+    .dot.bad { background: #f87171; box-shadow: 0 0 10px rgba(248,113,113,.8); }
+    .dot.muted { background: #94a3b8; }
+    .muted { color: #94a3b8; }
+    .navbtn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 56px; border-radius: 12px; font-size: 12px; color: #cbd5e1; background: transparent; border: 1px solid transparent; }
+    .navbtn.active { background: rgba(59,130,246,.12); border-color: rgba(96,165,250,.35); color: white; }
+    .tab { display: none; }
+    .tab.active { display: block; }
+    .modal { backdrop-filter: blur(8px); background: rgba(2,6,23,.72); }
+    input, select, button { font: inherit; }
+    input, select, textarea { width: 100%; background: rgba(15,23,42,.8); color: #e2e8f0; border: 1px solid rgba(148,163,184,.2); border-radius: 10px; padding: 0.7rem 0.8rem; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid rgba(96,165,250,.5); outline-offset: 1px; }
+    .status { display: inline-flex; align-items: center; gap: .5rem; text-transform: uppercase; letter-spacing: .08em; font-size: 11px; font-weight: 700; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 430px) {
+      .shell { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .card { border-radius: 16px; }
+    }
+  </style>
+</head>
 <body>
-<header class="sticky top-0 z-30 border-b border-[#263449] bg-[#131A26]/95 backdrop-blur"><div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap gap-3 items-center justify-between"><a href="#home" class="flex items-center gap-3" aria-label="HYDR8 home"><span class="w-10 h-10 rounded-xl bg-blue-600/20 grid place-items-center text-xl">💧</span><span><strong class="block text-xl text-white">HYDR8</strong><small class="muted">Train hydrated. Track honestly.</small></span></a><div class="flex items-center gap-2"><span id="authLabel" class="muted text-xs">Guest mode</span><button id="authBtn" class="btn bg-blue-600 text-white" type="button">Sign in</button><button id="viewBtn" class="btn border border-[#334155] desktop" type="button">Dashboard view</button></div></div></header>
-<div id="toast" class="fixed bottom-4 right-4 z-50 max-w-sm"></div>
-<main class="shell max-w-7xl mx-auto p-4 md:p-8"><div id="appNotice" class="card hidden mb-5 p-4 text-sm"></div><div id="mobileApp" class="max-w-[460px] mx-auto"><div class="flex items-center justify-between mb-5"><div><small class="muted uppercase tracking-[.2em]">Training dashboard</small><h1 id="greeting" class="text-2xl font-extrabold text-white">Welcome to HYDR8</h1></div><span class="pill">ESTIMATE</span></div>
-<section id="home" class="tab active space-y-4"><div class="card p-6"><div class="flex justify-between items-start"><div><p class="muted text-sm">Hydration estimate</p><p class="text-xs text-slate-500 mt-1">Based on your recorded workout data</p></div><button id="scoreHelp" class="pill text-blue-300" type="button" aria-label="How the hydration estimate works">How it works</button></div><div class="text-center py-5"><span id="score" class="text-7xl font-extrabold text-white">—</span><span class="text-xl muted">/100</span><p id="scoreLabel" class="text-green-400 font-semibold mt-1">No estimate yet</p></div><div class="border-t border-[#263449] pt-4 text-xs muted">Informational estimate, not medical advice or a diagnosis.</div></div><div class="grid grid-cols-2 gap-3 grid-stats"><div class="card p-4"><small class="muted">Fluid intake</small><strong id="fluid" class="block text-lg mt-1">0 ml</strong></div><div class="card p-4"><small class="muted">Estimated sweat loss</small><strong id="sweat" class="block text-lg mt-1">Unavailable</strong></div><div class="card p-4"><small class="muted">Temperature</small><strong id="temp" class="block text-lg mt-1">Unavailable</strong></div><div class="card p-4"><small class="muted">Patch</small><strong id="patch" class="block text-lg mt-1">Not connected</strong></div></div><div class="card p-4"><div class="flex justify-between"><div><h2 class="font-bold">Today’s summary</h2><p id="todaySummary" class="muted text-sm mt-1">No workout recorded today.</p></div><span class="text-blue-400">●</span></div></div><button id="startBtn" class="btn w-full bg-gradient-to-r from-blue-600 to-emerald-600 text-white" type="button">START WORKOUT</button></section>
-<section id="workout" class="tab space-y-4"><div class="card p-5"><div class="flex justify-between"><div><span class="status text-green-400"><i class="dot ok"></i>WORKOUT ACTIVE</span><p class="muted text-xs mt-2" id="workoutMeta">Patch data unavailable</p></div><strong id="timer" class="font-mono text-xl">00:00:00</strong></div></div><div class="grid grid-cols-2 gap-3"><div class="card p-4"><small class="muted">Fluid intake</small><strong id="liveFluid" class="block text-lg">0 ml</strong></div><div class="card p-4"><small class="muted">Sweat estimate</small><strong id="liveSweat" class="block text-lg">Unavailable</strong></div></div><div class="card p-4 chart"><canvas id="liveChart" aria-label="Workout estimate chart"></canvas></div><button id="addFluid" class="btn w-full bg-blue-600 text-white" type="button">+ ADD FLUID</button><button id="endBtn" class="btn w-full border border-red-500/60 text-red-300" type="button">END WORKOUT</button></section>
-<section id="insights" class="tab space-y-4"><div class="flex justify-between items-center"><h2 class="text-xl font-bold">Insights</h2><div class="flex bg-[#131A26] rounded-xl p-1"><button class="period px-3 py-2 rounded-lg" data-period="week">Week</button><button class="period px-3 py-2 rounded-lg" data-period="month">Month</button><button class="period px-3 py-2 rounded-lg" data-period="year">Year</button></div></div><div class="grid grid-cols-2 gap-3"><div class="card p-4"><small class="muted">Workouts</small><strong id="statCount" class="block text-xl">0</strong></div><div class="card p-4"><small class="muted">Avg estimate</small><strong id="statScore" class="block text-xl">—</strong></div><div class="card p-4"><small class="muted">Avg fluid</small><strong id="statFluid" class="block text-xl">0 ml</strong></div><div class="card p-4"><small class="muted">Avg duration</small><strong id="statDuration" class="block text-xl">00:00:00</strong></div></div><div class="card p-4 chart"><canvas id="historyChart" aria-label="Hydration estimates by workout"></canvas></div><p id="insightText" class="card p-4 text-sm muted">Not enough data yet. Complete more workouts to generate personalized insights.</p></section>
-<section id="history" class="tab space-y-4"><div class="flex items-center justify-between"><h2 class="text-xl font-bold">History</h2><button id="clearBtn" class="btn border border-[#334155] text-xs" type="button">Clear local data</button></div><div id="historyList" class="space-y-3"></div></section>
-<section id="settings" class="tab space-y-4"><h2 class="text-xl font-bold">Settings</h2><form id="profileForm" class="card p-5 space-y-3"><h3 class="font-bold">Profile</h3><label class="block text-sm">First name<input id="firstName" class="input mt-1" maxlength="60"></label><label class="block text-sm">Age range<select id="ageRange" class="input mt-1"><option value="">Prefer not to say</option><option>Under 18</option><option>18–24</option><option>25–34</option><option>35–44</option><option>45+</option></select></label><label class="block text-sm">Primary sport<input id="sport" class="input mt-1" maxlength="60"></label><label class="block text-sm">Units<select id="units" class="input mt-1"><option value="F">US (°F, oz)</option><option value="C">Metric (°C, ml)</option></select></label><label class="flex gap-3 items-center text-sm"><input id="notifications" type="checkbox" checked> Session and connection notifications</label><button class="btn w-full bg-emerald-600 text-white" type="submit">Save settings</button></form><div class="card p-5 space-y-3"><h3 class="font-bold">HYDR8 Patch</h3><p id="bleStatus" class="status text-sm"><i class="dot"></i>NOT CONNECTED</p><p class="muted text-xs">Web Bluetooth needs HTTPS and a supported browser such as Chrome or Edge. Sensor values remain unavailable until a physical patch sends them.</p><button id="bleBtn" class="btn w-full bg-blue-600 text-white" type="button">Connect patch</button></div><button id="signOut" class="btn w-full border border-red-500/60 text-red-300 hidden" type="button">Sign out</button></section>
-<nav class="grid grid-cols-4 gap-1 mt-6 border-t border-[#263449] pt-3" aria-label="Main navigation"><button class="navbtn" data-tab="home" aria-current="true">⌂<br>Home</button><button class="navbtn" data-tab="insights">▥<br>Insights</button><button class="navbtn" data-tab="history">◷<br>History</button><button class="navbtn" data-tab="settings">⚙<br>Settings</button></nav></div></main>
-<div id="modal" class="modal hidden fixed inset-0 z-40 p-4 grid place-items-center"><div class="card p-6 w-full max-w-md"><div class="flex justify-between"><h2 id="modalTitle" class="text-xl font-bold">Sign in</h2><button id="modalClose" class="btn px-2" type="button" aria-label="Close dialog">×</button></div><form id="authForm" class="space-y-3 mt-4"><label class="block text-sm">Email<input id="email" type="email" required class="input mt-1"></label><label class="block text-sm">Password<input id="password" type="password" minlength="6" required class="input mt-1"></label><label id="nameWrap" class="hidden block text-sm">First name<input id="authName" class="input mt-1" maxlength="60"></label><button id="authSubmit" class="btn w-full bg-blue-600 text-white" type="submit">Sign in</button></form><div class="flex justify-between mt-4 text-sm"><button id="authToggle" class="text-blue-300" type="button">Create account</button><button id="resetBtn" class="text-blue-300" type="button">Forgot password?</button></div><p id="authMessage" class="muted text-xs mt-3"></p></div></div>
-<div id="workoutModal" class="modal hidden fixed inset-0 z-40 p-4 grid place-items-center"><div class="card p-6 w-full max-w-md"><h2 class="text-xl font-bold">Set up workout</h2><form id="workoutForm" class="space-y-3 mt-4"><label class="block text-sm">Sport<input id="wSport" required value="Basketball" class="input mt-1"></label><label class="block text-sm">Workout type<select id="wType" class="input mt-1"><option>Practice</option><option>Game</option><option>Run</option><option>Strength training</option><option>Other</option></select></label><label class="block text-sm">Environment<select id="wEnvironment" class="input mt-1"><option>Indoor</option><option>Outdoor</option><option>Unknown</option></select></label><label class="block text-sm">Temperature (optional)<input id="wTemp" type="number" step=".1" class="input mt-1"></label><button class="btn w-full bg-blue-600 text-white" type="submit">START WORKOUT</button></form></div></div>
-<script src="app.js"></script></body></html>
+  <header class="sticky top-0 z-30 border-b border-[#263449] bg-[#131A26]/95 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
+      <a href="#home" class="flex items-center gap-3 font-extrabold tracking-tight text-lg">
+        <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300 border border-blue-400/30">H</span>
+        <span>HYDR8</span>
+      </a>
+      <div class="flex items-center gap-2">
+        <button id="authBtn" class="btn btn-secondary px-4 py-2 text-sm">Sign in</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast" class="fixed bottom-4 right-4 z-50 max-w-sm"></div>
+
+  <main class="shell max-w-7xl mx-auto p-4 md:p-8">
+    <div id="appNotice" class="card hidden mb-5 p-4 text-sm"></div>
+
+    <div id="mobileApp" class="max-w-[460px] mx-auto">
+      <section id="home" class="tab active space-y-4">
+        <div class="card p-6">
+          <div class="flex justify-between items-start gap-3">
+            <div>
+              <p class="muted text-sm">Hydration estimate</p>
+              <h2 class="text-2xl font-black mt-1"><span id="score">—</span><span class="text-base font-semibold text-slate-300"> / 100</span></h2>
+            </div>
+            <button id="scoreHelp" class="btn btn-ghost px-2 py-1 text-xs">?</button>
+          </div>
+          <p id="scoreLabel" class="muted text-sm mt-2">No estimate yet</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card p-4">
+            <p class="muted text-xs uppercase tracking-[0.18em]">Fluid</p>
+            <p id="fluid" class="mt-2 text-xl font-extrabold">0 ml</p>
+          </div>
+          <div class="card p-4">
+            <p class="muted text-xs uppercase tracking-[0.18em]">Sweat</p>
+            <p id="sweat" class="mt-2 text-xl font-extrabold">Unavailable</p>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <div class="flex items-center justify-between">
+            <p class="muted text-xs uppercase tracking-[0.18em]">Patch connection</p>
+            <span id="bleStatus" class="status"><i class="dot muted"></i>Waiting</span>
+          </div>
+          <div id="patchConnectionCard" class="mt-3 rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+            <p class="text-sm font-semibold text-slate-200">HYDR8 PATCH</p>
+            <p class="mt-2 text-lg font-black">○ Not connected</p>
+            <p class="muted text-xs mt-2">Battery: —</p>
+            <p class="muted text-xs mt-1">Last sync: —</p>
+            <button id="connectPatchBtn" class="btn btn-primary w-full mt-3 py-2.5 text-sm">Connect Patch</button>
+          </div>
+        </div>
+
+        <div id="patchBatteryCard" class="card p-4">
+          <p class="muted text-xs uppercase tracking-[0.18em]">Patch Battery</p>
+          <div class="flex items-center justify-between mt-3">
+            <div>
+              <div class="text-xl font-black">🔋 0%</div>
+              <p class="muted text-xs mt-1">Battery unavailable</p>
+            </div>
+            <span class="text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded-full">Unavailable</span>
+          </div>
+          <p class="muted text-xs mt-3">Connect your HYDR8 Patch to view battery level.</p>
+        </div>
+
+        <div class="card p-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="muted text-xs uppercase tracking-[0.18em]">AI Hydration Assistant</p>
+            <span class="text-[10px] uppercase tracking-[0.16em] text-slate-400">Info only</span>
+          </div>
+          <p id="aiAssistantText" class="text-sm leading-6 text-slate-200">Your hydration assistant is ready to provide informational guidance.</p>
+          <p class="muted text-xs mt-3">HYDR8 provides informational estimates and is not medical advice.</p>
+        </div>
+
+        <div class="card p-4">
+          <div class="flex justify-between items-center mb-3">
+            <p class="muted text-xs uppercase tracking-[0.18em]">Get HYDR8 Patch</p>
+            <span class="text-[10px] uppercase tracking-[0.16em] text-amber-300">Coming soon</span>
+          </div>
+          <h3 class="text-xl font-black">Wearable sweat &amp; heat monitoring sensor</h3>
+          <p class="muted text-sm mt-2">The patch is intended to help monitor sweat-related and heat-stress indicators, while actual sensor functionality requires the physical hardware and a connected app setup.</p>
+          <button id="shopBtn" class="btn btn-primary w-full mt-4 py-3 text-sm">Order Your Patch</button>
+          <p class="muted text-xs mt-2">This button opens the product waitlist until a live order backend is connected.</p>
+        </div>
+      </section>
+
+      <section id="workout" class="tab space-y-4">
+        <div class="card p-5">
+          <div class="flex justify-between">
+            <div>
+              <span class="status text-green-400"><i class="dot ok"></i>WORKOUT ACTIVE</span>
+              <p id="activeStatus" class="muted text-sm mt-2">No workout in progress</p>
+            </div>
+            <button id="startWorkoutBtn" class="btn btn-primary px-3 py-2 text-sm">Start</button>
+          </div>
+          <div class="mt-4 grid-2 gap-2">
+            <div class="card p-3 bg-slate-950/40">
+              <p class="muted text-[10px] uppercase tracking-[0.16em]">Duration</p>
+              <p id="workoutDuration" class="text-lg font-extrabold mt-2">00:00</p>
+            </div>
+            <div class="card p-3 bg-slate-950/40">
+              <p class="muted text-[10px] uppercase tracking-[0.16em]">Fluid</p>
+              <p id="workoutFluid" class="text-lg font-extrabold mt-2">0 ml</p>
+            </div>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <button id="addFluidBtn" class="btn btn-secondary flex-1 py-2.5 text-sm">Add fluid</button>
+            <button id="endWorkoutBtn" class="btn btn-ghost flex-1 py-2.5 text-sm">Finish</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="insights" class="tab space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold">Insights</h2>
+          <div class="flex bg-[#131A26] rounded-xl p-1">
+            <button class="period btn px-2 py-1 text-xs rounded-lg border border-transparent" data-period="week">7d</button>
+            <button class="period btn px-2 py-1 text-xs rounded-lg border border-transparent" data-period="month">30d</button>
+            <button class="period btn px-2 py-1 text-xs rounded-lg border border-transparent" data-period="year">1y</button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card p-4">
+            <p class="muted text-xs uppercase tracking-[0.18em]">Workouts</p>
+            <p id="statCount" class="text-2xl font-black mt-2">0</p>
+          </div>
+          <div class="card p-4">
+            <p class="muted text-xs uppercase tracking-[0.18em]">Avg score</p>
+            <p id="statScore" class="text-2xl font-black mt-2">—</p>
+          </div>
+        </div>
+        <div class="card p-4">
+          <canvas id="historyChart" height="180"></canvas>
+        </div>
+      </section>
+
+      <section id="history" class="tab space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold">History</h2>
+          <button id="clearBtn" class="btn btn-ghost px-3 py-2 text-xs">Clear local data</button>
+        </div>
+        <div id="historyList" class="space-y-3"></div>
+      </section>
+
+      <section id="settings" class="tab space-y-4">
+        <h2 class="text-xl font-bold">Settings</h2>
+
+        <form id="profileForm" class="card p-5 space-y-4">
+          <div>
+            <h3 class="font-bold mb-3">Account</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Name</label>
+                <input id="firstName" type="text" placeholder="Your name">
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Email</label>
+                <input id="email" type="email" placeholder="you@example.com">
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Favorite Gatorade flavor</label>
+                <select id="favoriteGatoradeFlavor">
+                  <option value="Glacier Freeze">Glacier Freeze</option>
+                  <option value="Cool Blue">Cool Blue</option>
+                  <option value="Lemon-Lime">Lemon-Lime</option>
+                  <option value="Fruit Punch">Fruit Punch</option>
+                  <option value="Orange">Orange</option>
+                  <option value="Grape">Grape</option>
+                  <option value="Other">Other</option>
+                  <option value="I don’t drink Gatorade">I don’t drink Gatorade</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-3">HYDR8 patch</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Connection</label>
+                <div id="settingsPatchConnection" class="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">
+                  Not connected
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Battery</label>
+                <div id="settingsPatchBattery" class="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">Battery unavailable</div>
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Charging</label>
+                <div id="settingsPatchCharging" class="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">Charging status unavailable.</div>
+              </div>
+              <div>
+                <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-1">Device information</label>
+                <div id="settingsDeviceInfo" class="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">No patch paired.</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-3">Subscription</h3>
+            <div class="space-y-3">
+              <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">
+                <div class="flex items-center justify-between gap-3">
+                  <span>Current plan</span>
+                  <span id="settingsPlan" class="font-bold">Free</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button type="button" id="upgradeBtn" class="btn btn-primary flex-1 py-2.5 text-sm">Upgrade</button>
+                <button type="button" id="manageSubBtn" class="btn btn-secondary flex-1 py-2.5 text-sm">Manage subscription</button>
+              </div>
+              <button type="button" id="cancelSubBtn" class="btn btn-ghost w-full py-2.5 text-sm">Cancel subscription</button>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-3">AI Hydration Assistant</h3>
+            <div class="space-y-3">
+              <label class="flex items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">
+                <span>Enable AI assistance</span>
+                <input id="aiAssistantEnabled" type="checkbox" class="h-4 w-4 accent-blue-500">
+              </label>
+              <label class="flex items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">
+                <span>Personalization</span>
+                <input id="personalizationEnabled" type="checkbox" class="h-4 w-4 accent-blue-500">
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-3">Data</h3>
+            <div class="space-y-2">
+              <button type="button" id="exportDataBtn" class="btn btn-secondary w-full py-2.5 text-sm">Export data</button>
+              <button type="button" id="clearLocalBtn" class="btn btn-ghost w-full py-2.5 text-sm">Clear local data</button>
+              <button type="button" id="deleteAccountBtn" class="btn btn-ghost w-full py-2.5 text-sm text-red-300 border-red-500/40">Delete account</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full py-3 text-sm">Save settings</button>
+        </form>
+      </section>
+    </div>
+
+    <nav class="grid grid-cols-4 gap-1 mt-6 border-t border-[#263449] pt-3" aria-label="Main navigation">
+      <button class="navbtn active" data-tab="home" aria-current="true"><span>⌂</span><span>Home</span></button>
+      <button class="navbtn" data-tab="workout"><span>◔</span><span>Workout</span></button>
+      <button class="navbtn" data-tab="insights"><span>📊</span><span>Insights</span></button>
+      <button class="navbtn" data-tab="settings"><span>⚙</span><span>Settings</span></button>
+    </nav>
+  </main>
+
+  <div id="modal" class="modal hidden fixed inset-0 z-40 p-4 grid place-items-center">
+    <div class="card p-6 w-full max-w-md">
+      <div class="flex justify-between items-center">
+        <h2 id="modalTitle" class="text-xl font-bold">Sign in</h2>
+        <button type="button" id="closeAuthModal" class="btn btn-ghost px-2 py-1 text-xs">Close</button>
+      </div>
+      <form id="authForm" class="space-y-3 mt-4">
+        <input id="authEmail" type="email" placeholder="Email" required>
+        <input id="authPassword" type="password" placeholder="Password" required>
+        <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm">
+          <label class="block text-xs uppercase tracking-[0.18em] text-slate-400 mb-2">Favorite Gatorade flavor</label>
+          <select id="authFavoriteFlavor">
+            <option value="Glacier Freeze">Glacier Freeze</option>
+            <option value="Cool Blue">Cool Blue</option>
+            <option value="Lemon-Lime">Lemon-Lime</option>
+            <option value="Fruit Punch">Fruit Punch</option>
+            <option value="Orange">Orange</option>
+            <option value="Grape">Grape</option>
+            <option value="Other">Other</option>
+            <option value="I don’t drink Gatorade">I don’t drink Gatorade</option>
+          </select>
+        </div>
+        <button id="authSubmit" type="submit" class="btn btn-primary w-full py-3 text-sm">Sign in</button>
+      </form>
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <button id="authToggle" type="button" class="text-blue-300 underline">Create account</button>
+        <button id="resetBtn" type="button" class="text-slate-300 underline">Reset password</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="workoutModal" class="modal hidden fixed inset-0 z-40 p-4 grid place-items-center">
+    <div class="card p-6 w-full max-w-md">
+      <h2 class="text-xl font-bold">Set up workout</h2>
+      <form id="workoutForm" class="space-y-3 mt-4">
+        <input id="wSport" type="text" placeholder="Sport" value="Running">
+        <select id="wType">
+          <option value="Training">Training</option>
+          <option value="Race">Race</option>
+          <option value="Recovery">Recovery</option>
+          <option value="Workout">Workout</option>
+        </select>
+        <select id="wEnvironment">
+          <option value="Indoor">Indoor</option>
+          <option value="Outdoor">Outdoor</option>
+          <option value="Gym">Gym</option>
+          <option value="Heat">Heat</option>
+          <option value="Unknown">Unknown</option>
+        </select>
+        <input id="wTemp" type="number" placeholder="Temperature °F" min="-20" max="140" step="1">
+        <button type="submit" class="btn btn-primary w-full py-3 text-sm">Start workout</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
